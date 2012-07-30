@@ -17,12 +17,15 @@
   )
 
 (defun add-account (&key ledger account &allow-other-keys)
-  (if (and (ledgerp ledger) (is-account account))
-      (let ((accounts (or (assoc 'accounts (cdr ledger)) (list 'accounts)))
+  (if (and (ledgerp ledger) (accountp account))
+      (let ((accounts (or (assoc 'accounts (cdr ledger))
+			  (setf (cdr ledger) (acons 'accounts nil (cdr ledger)))))
 	    (name (account-name account))
 	    )
+	(print accounts)
 	(if name
-	    (or (assoc name (cdr accounts)) (push (cons name account) (cdr accounts))))))
+	    (setf accounts (or (assoc name (cdr accounts))
+			       (acons name account (cdr accounts)))))))
   )
 
 (defun accountp (account)
@@ -34,5 +37,6 @@
   )
 
 (defun make-account (&key name debitp &allow-other-keys)
-   (cons 'account (list (cons 'name name) (cons 'debitp debitp) (list 'entries)))
+   (cons 'account (list (cons 'name name) (cons 'debitp debitp)
+			(list 'entries)))
    )

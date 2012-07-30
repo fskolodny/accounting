@@ -2,9 +2,9 @@
 
 (asdf:defsystem #:accounting
   :serial t
-  :description "Describe accounting here"
+  :description "Simple accounting package"
   :author "Fila Kolodny <fskolodny@gmail.com"
-  :license "Specify license here"
+  :license "GPL Version 3"
   :components ((:file "package")
                (:file "accounting")))
 
