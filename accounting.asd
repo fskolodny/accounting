@@ -4,6 +4,7 @@
   :serial t
   :depends-on (#:iterate
                #:local-time
+               #:wu-decimal
                #:lisp-unit
               )
   :description "Simple accounting package"
