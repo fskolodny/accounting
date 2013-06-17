@@ -50,13 +50,15 @@
          (ledger (new-ledger))
          (assets (account-named ledger "Assets"))
          (cash (make-account :name "Cash" :parent assets))
+         (now (local-time:parse-timestring "2013-06-12T12:00:00"))
+         (next-month (local-time:timestamp+ now 1 :month))
          (debit-entry (make-account-entry :debitp t
                                           :amount 20
-                                          :date (local-time:parse-timestring "2013-06-12T12:00:00")
+                                          :date now
                                           :legend "Borrow"))
          (credit-entry (make-account-entry :debitp nil
                                            :amount 20
-                                           :date (local-time:parse-timestring "2013-07-12T12:00:00")
+                                           :date next-month
                                            :legend "Repay"))
          )
     (assert-equal 20
@@ -75,4 +77,25 @@
                   (remove-if #'noise-char (format nil "~a" cash)))
     )
   )
-
+(define-test |Batch|
+  (let* ((ledger (make-ledger))
+         (cash (make-account :name "Cash"
+                             :parent (account-named ledger "Assets")))
+         (capital (make-account :name "Capital"
+                                :parent (account-named ledger "Equity")))
+         (now (local-time:parse-timestring "2013-06-12T12:00:00"))
+         (batch (make-batch :ledger ledger :legend "Initial investment"
+                            :date now))
+         (debit-transaction (make-transaction :account cash :debitp t :amount 20))
+         (credit-transaction (make-transaction :account capital :debitp nil :amount 20))
+         )
+    (assert-numerical-equal 0 (hash batch))
+    (assert-true (in-balance batch))
+    (add :transaction debit-transaction :batch batch)
+    (assert-numerical-equal 20 (hash batch))
+    (assert-false (in-balance batch))
+    (add :transaction credit-transaction :batch batch)
+    (assert-numerical-equal 40 (hash batch))
+    (assert-true (in-balance batch))
+    )
+  )
