@@ -16,10 +16,15 @@
            #:make-account-entry
            #:make-batch
            #:hash
-           #:post-entry
            #:make-transaction
            #:in-balance
            #:add
+           #:post-entry
+           #:post-batch
+           #:posted
+           #:ledger
+           #:make-journal
+           #:empty
            )
   )
 (defpackage #:accounting.tests
