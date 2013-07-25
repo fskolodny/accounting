@@ -30,7 +30,7 @@
 (defpackage #:accounting.tests
   (:use #:cl
         #:accounting
-        #:lisp-unit
+        #:fiveam
         #:wu-decimal
         )
   )

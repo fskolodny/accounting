@@ -5,7 +5,7 @@
   :depends-on (#:iterate
                #:local-time
                #:wu-decimal
-               #:lisp-unit
+               #:fiveam
               )
   :description "Simple accounting package"
   :author "Fila Kolodny <fskolodny@gmail.com"

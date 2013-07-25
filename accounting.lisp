@@ -48,7 +48,7 @@
    )
   )
 (defmethod debitp ((self account))
-  (position (char (account-number self) 0) "14")
+  (not (null (position (char (account-number self) 0) "14")))
   )
 (defmethod empty ((self account))
   (= 0 (length (entries self)))
@@ -87,7 +87,7 @@
     (iter
       (for entry in-sequence (entries self))
       (setf result (funcall
-                    (if (lisp-unit:logically-equal debit-account (debitp entry))
+                    (if (equal debit-account (debitp entry))
                         #'+ #'-)
                     result (amount entry))))
     result)
