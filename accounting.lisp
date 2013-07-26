@@ -87,7 +87,7 @@
     (iter
       (for entry in-sequence (entries self))
       (setf result (funcall
-                    (if (equal debit-account (debitp entry))
+                    (if (eq debit-account (debitp entry))
                         #'+ #'-)
                     result (amount entry))))
     result)
@@ -166,7 +166,7 @@
           (setf credit-sum (+ credit-sum (amount entry)))
           )
       )
-    (equalp debit-sum credit-sum)
+    (equal debit-sum credit-sum)
     )
   )
 (defun make-account-entry (&key amount date debitp legend &allow-other-keys)
@@ -202,7 +202,7 @@
   )
 (defun add (&key transaction batch)
   (if (member-if #'(lambda (tran)
-                     (equalp (account tran) (account transaction)))
+                     (eq (account tran) (account transaction)))
                   (entries batch))
        (error "Transaction ~a already in batch ~a" transaction batch))
   (setf (entries batch) (push transaction (entries batch)))
