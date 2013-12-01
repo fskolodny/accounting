@@ -1,0 +1,120 @@
+;;;; tests.lisp
+
+(in-package #:accounting.tests)
+;;; "tests" go here. Hacks and glory await!
+
+(defparameter +company-name+ "Acme")
+(defun new-ledger ()
+  (make-ledger :name +company-name+))
+(def-test |Empty Ledger| ()
+  (let ((ledger (new-ledger))
+        )
+    (is (equal +company-name+ (name ledger)))
+    (is (eql 5 (number-of-subaccounts ledger)))
+    )
+  )
+(def-test |Account| ()
+  (let* (
+         (ledger (new-ledger))
+         (assets (account-named ledger "Assets"))
+         (account (make-account :name "Cash" :parent assets))
+         )
+    (is (equal "Cash" (name account)))
+    (is (equal "1" (account-number assets)))
+    (is (eql 1 (number-of-subaccounts assets)))
+    (is (equal "11" (account-number account)))
+    (is (= 0 (balance account)))
+    (is-true (empty account))
+    )
+  )
+(defun noise-char (c)
+  (or (char= c #\space)
+      (char= c #\_)
+      )
+  )
+(def-test |Printing| ()
+  (let* (
+         (ledger (new-ledger))
+         (assets (account-named ledger "Assets"))
+         (cash (make-account :name "Cash" :parent assets))
+         )
+    (is (eq cash (account-named ledger "Cash")))
+    (is (equal (format nil "11Cash~%")
+                  (remove-if #'noise-char (format nil "~a" cash))))
+    )
+  )
+(def-test |Posting| ()
+  (let* (
+         (ledger (new-ledger))
+         (assets (account-named ledger "Assets"))
+         (cash (make-account :name "Cash" :parent assets))
+         (now (local-time:parse-timestring "2013-06-12T12:00:00"))
+         (next-month (local-time:timestamp+ now 1 :month))
+         (debit-entry (make-account-entry :debitp t
+                                          :amount 20
+                                          :date now
+                                          :legend "Borrow"))
+         (credit-entry (make-account-entry :debitp nil
+                                           :amount 20
+                                           :date next-month
+                                           :legend "Repay"))
+         )
+    (is (= 20
+           (progn
+             (post-entry cash debit-entry)
+             (balance cash)
+             )))
+    (signals error (post-entry cash debit-entry))
+    (is (equal (format nil "11Cash~%~%2013-06-12Borrow20.00|")
+               (remove-if #'noise-char (format nil "~a" cash))))
+    (is (= 0
+           (progn
+             (post-entry cash credit-entry)
+             (balance cash)
+             )))
+    (is (equal (format nil "11Cash~%~%2013-06-12Borrow20.00|2013-07-12Repay20.00")
+               (remove-if #'noise-char (format nil "~a" cash))))
+    (is-false (empty cash))
+    )
+  )
+(def-test |Batch| ()
+  (let* ((ledger (make-ledger))
+         (cash (make-account :name "Cash"
+                             :parent (account-named ledger "Assets")))
+         (capital (make-account :name "Capital"
+                                :parent (account-named ledger "Equity")))
+         (now (local-time:parse-timestring "2013-06-12T12:00:00"))
+         (batch (make-batch :ledger ledger :legend "Initial investment"
+                            :date now))
+         (debit-transaction (make-transaction :account "Cash" :debitp t :amount 20))
+         (credit-transaction (make-transaction :account "Capital" :debitp nil :amount 20))
+         )
+    (is-false (posted batch))
+    (is (= 0 (hash batch)))
+    (is-true (in-balance batch))
+    (add :transaction debit-transaction :batch batch)
+    (is (= 20 (hash batch)))
+    (is-false (in-balance batch))
+    (signals error (post-batch batch ledger))
+    (signals error (add :transaction (make-transaction :account "Cash"
+                                                        :debitp nil
+                                                        :amount 5)
+                        :batch batch))
+    (add :transaction credit-transaction :batch batch)
+    (is (= 40 (hash batch)))
+    (is-true (in-balance batch))
+    (post-batch batch ledger)
+    (is-true (posted batch))
+    (is (= 20 (balance cash)))
+    (is (= 20 (balance capital)))
+    )
+  )
+(def-test |Empty journal| ()
+  (let* ((ledger (make-ledger))
+         (journal (make-journal :ledger ledger))
+         )
+    (is-true (empty journal))
+    (is (eq ledger (ledger journal)))
+    )
+  )
+
