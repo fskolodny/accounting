@@ -5,21 +5,21 @@
 ;;; "accounting" goes here. Hacks and glory await!
 
 (defun make-ledger (&key name &allow-other-keys)
-  (cons 'ledger (list (cons 'name name) (list 'accounts)))
+  (cons :ledger (list (cons :name name) (list :accounts)))
   )
 
 (defun ledgerp (ledger)
-  (eq 'ledger (car ledger)))
+  (eq :ledger (car ledger)))
 
 (defun ledger-name (ledger)
   (if (ledgerp ledger)
-      (cdr (assoc 'name (cdr ledger))))
+      (cdr (assoc :name (cdr ledger))))
   )
 
 (defun add-account (&key ledger account &allow-other-keys)
   (if (and (ledgerp ledger) (accountp account))
-      (let ((accounts (or (assoc 'accounts (cdr ledger))
-			  (setf (cdr ledger) (acons 'accounts nil (cdr ledger)))))
+      (let ((accounts (or (assoc :accounts (cdr ledger))
+			  (setf (cdr ledger) (acons :accounts nil (cdr ledger)))))
 	    (name (account-name account))
 	    )
 	(print accounts)
@@ -29,14 +29,14 @@
   )
 
 (defun accountp (account)
-  (eq 'account (car account)))
+  (eq :account (car account)))
 
 (defun account-name (account)
   (if (accountp account)
-      (cdr (assoc 'name (cdr account))))
+      (cdr (assoc :name (cdr account))))
   )
 
 (defun make-account (&key name debitp &allow-other-keys)
-   (cons 'account (list (cons 'name name) (cons 'debitp debitp)
-			(list 'entries)))
+   (cons :account (list (cons :name name) (cons :debitp debitp)
+			(list :entries)))
    )
